@@ -6,6 +6,7 @@ import com.gamedev.taskManager.exceptions.BadRequestException;
 import com.gamedev.taskManager.exceptions.NotFoundException;
 import com.gamedev.taskManager.model.DeveloperDTO;
 import com.gamedev.taskManager.model.GameDTO;
+import com.gamedev.taskManager.model.TaskDTO;
 import com.gamedev.taskManager.repository.developer.DeveloperRepository;
 import com.gamedev.taskManager.repository.game.GameRepository;
 import com.gamedev.taskManager.services.game.GameService;
@@ -63,27 +64,6 @@ public class GameController {
         return gameService.gamesByState(state);
     }
 
-    /*
-    @GetMapping("/developing")
-    public List<GameDTO> allGamesInDevelopment(){
-        //es solo por el mensaje, se debe devolver al cliente la lista vacia
-        if(gameService.allGamesInDevelopment().isEmpty()){
-            log.info("There are no games in development");
-        }
-        return gameService.allGamesInDevelopment();
-    }
-
-    @GetMapping("/finished")
-    public List<GameDTO> allFinishedGames(){
-        //es solo por el mensaje, se debe devolver al cliente la lista vacia
-        if(gameService.allFinishedGames().isEmpty()){
-            log.info("There are no finished games");
-        }
-        return gameService.allFinishedGames();
-    }
-
-     */
-
     @GetMapping("/{gameId}/developers")
     public List<DeveloperDTO> allGameDevelopers(@PathVariable(value = "gameId") UUID gameId)
             throws NotFoundException {
@@ -96,6 +76,20 @@ public class GameController {
                 log.info("There are no developers in this game");
             }
             return gameService.allGameDevelopers(gameOptional.get());
+        }
+    }
+
+    @PutMapping("/{gameId}/{developerId}/assignTask")
+    public ResponseEntity<Void> assignTask(@PathVariable(value = "gameId") UUID gameId,
+                                           @PathVariable(value = "developerId") UUID developerId,
+                                           @RequestBody TaskDTO taskDTO) throws BadRequestException, NotFoundException {
+        if(gameService.assignTask(gameId, developerId, taskDTO)){
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Location", "/api/v1/task/developer"
+                    +developerRepository.findById(developerId).get().getUuid());
+            return new ResponseEntity<>(headers, HttpStatus.CREATED);
+        } else {
+            throw new BadRequestException();
         }
     }
 

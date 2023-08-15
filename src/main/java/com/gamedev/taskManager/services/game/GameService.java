@@ -5,6 +5,7 @@ import com.gamedev.taskManager.domain.Game;
 import com.gamedev.taskManager.exceptions.NotFoundException;
 import com.gamedev.taskManager.model.DeveloperDTO;
 import com.gamedev.taskManager.model.GameDTO;
+import com.gamedev.taskManager.model.TaskDTO;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -30,4 +31,5 @@ public interface GameService {
 
     Optional<GameDTO> getGameById(UUID gameId);
 
+    boolean assignTask(UUID gameId, UUID developerId, TaskDTO taskDTO) throws NotFoundException;
 }

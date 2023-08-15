@@ -2,13 +2,17 @@ package com.gamedev.taskManager.services.game.impl;
 
 import com.gamedev.taskManager.domain.Developer;
 import com.gamedev.taskManager.domain.Game;
+import com.gamedev.taskManager.domain.Task;
 import com.gamedev.taskManager.exceptions.NotFoundException;
 import com.gamedev.taskManager.mapper.developer.DeveloperMapper;
 import com.gamedev.taskManager.mapper.game.GameMapper;
+import com.gamedev.taskManager.mapper.task.TaskMapper;
 import com.gamedev.taskManager.model.DeveloperDTO;
 import com.gamedev.taskManager.model.GameDTO;
+import com.gamedev.taskManager.model.TaskDTO;
 import com.gamedev.taskManager.repository.developer.DeveloperRepository;
 import com.gamedev.taskManager.repository.game.GameRepository;
+import com.gamedev.taskManager.repository.task.TaskRepository;
 import com.gamedev.taskManager.services.game.GameService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,10 @@ public class GameServiceJPAImpl implements GameService {
     private final DeveloperMapper developerMapper;
 
     private final DeveloperRepository developerRepository;
+
+    private final TaskMapper taskMapper;
+
+    private final TaskRepository taskRepository;
 
     @Override
     public Game createGame(GameDTO gameDTO) {
@@ -114,6 +122,30 @@ public class GameServiceJPAImpl implements GameService {
             return Optional.of(gameMapper.gameToGameDTO(gameOptional.get()));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public boolean assignTask(UUID gameId, UUID developerId, TaskDTO taskDTO) throws NotFoundException {
+        if (gameRepository.findById(gameId).isEmpty() || developerRepository.findById(developerId).isEmpty()) {
+            throw new NotFoundException("Wrong developer or game ID");
+        } else {
+            Game game = gameRepository.findById(gameId).orElse(null);
+            Developer developer = developerRepository.findById(developerId).orElse(null);
+            Task task = taskMapper.taskDTOtoTask(taskDTO);
+            task.setUuid(UUID.randomUUID());
+
+            if (game!= null && developer != null) {
+                task.setDeveloper(developer);
+                task.setGame(game);
+                developer.getTaskList().add(task);
+                game.getTasks().add(task);
+
+                taskRepository.save(task);
+
+                return true;
+            }
+        }
+        return false;
     }
 
 

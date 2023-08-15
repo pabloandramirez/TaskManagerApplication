@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum State {
     PENDING ("Pending"),
-    IN_PROGRESS ("In progress"),
+    IN_PROGRESS ("inProgress"),
     COMPLETED ("Completed");
 
     private final String state;
